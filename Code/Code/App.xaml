@@ -1,10 +1,8 @@
-﻿<?xml version="1.0" encoding="UTF-8" ?>
+﻿<?xml version = "1.0" encoding = "UTF-8" ?>
 <Application xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:local="clr-namespace:FRONT_END"
-             xmlns:converters="clr-namespace:FRONT_END.Converters"
-             x:Class="FRONT_END.App">
-
+             xmlns:converters="clr-namespace:Ecommerce.Mobile.Converters"
+             x:Class="Ecommerce.Mobile.App">
     <Application.Resources>
         <ResourceDictionary>
 
@@ -15,11 +13,11 @@
             <!-- Colors -->
             <Color x:Key="Primary">#512BD4</Color>
             <Color x:Key="PrimaryDark">#351985</Color>
-            <Color x:Key="Background">Black</Color>
+            <Color x:Key="Background">#F9F9F9</Color>
 
             <!-- Styles -->
             <Style TargetType="Label">
-                <Setter Property="TextColor" Value="White" />
+                <Setter Property="TextColor" Value="Black" />
                 <Setter Property="FontFamily" Value="OpenSansRegular" />
             </Style>
 

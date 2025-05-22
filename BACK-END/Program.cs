@@ -1,44 +1,54 @@
-using BACK_END.Data;
+﻿using BACK_END.Data;
 using BACK_END.Service;
 using DotNetEnv;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using System.Text.Json.Serialization;
 
-
-//Carga del archivo .env
+// Carga del archivo .env
 Env.Load();
-
 
 var builder = WebApplication.CreateBuilder(args);
 
-
-// Add services to the container.
+// Add services to the container
 builder.Services.AddControllers()
-    .AddJsonOptions(
-    json => json.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
+    .AddJsonOptions(json =>
+        json.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
 
-
-
-// Configuraci�n de Swagger/OpenAPI
+// Configuración de Swagger/OpenAPI
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
 });
 
+// Inyección de servicios
 builder.Services.AddSingleton<CloudinaryService>();
 
-// Configuraci�n de la base de datos
+// Configuración de la base de datos
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("SqlServerConnection"));
 });
-
 builder.Services.AddTransient<SeeDB>();
+
+// ✅ Agrega CORS ANTES de builder.Build()
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowLocalhost", policy =>
+    {
+        policy.WithOrigins("https://192.168.1.21") // tu IP local
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
 
 var app = builder.Build();
 
+// ✅ Usa la política CORS registrada
+app.UseCors("AllowLocalhost");
+
+// ✅ Seed de datos (si lo necesitas)
 SeedData(app);
 
 void SeedData(WebApplication app)
@@ -52,7 +62,7 @@ void SeedData(WebApplication app)
     }
 }
 
-// Configure the HTTP request pipeline.
+// Middleware del pipeline
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -65,5 +75,4 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
-app.UseCors(cor => cor.AllowAnyMethod().AllowAnyHeader().AllowCredentials().SetIsOriginAllowed(origin=>true));
 app.Run();

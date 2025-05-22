@@ -1,5 +1,5 @@
 ﻿using BACK_END.Data;
-using BACK_END.Dto;
+using LIBRARY.Shared.DTO;
 using BACK_END.Service;
 using LIBRARY.Shared.Entity;
 using Microsoft.AspNetCore.Mvc;
@@ -50,7 +50,7 @@ namespace BACK_END.Controllers
 
 
         [HttpPost]
-        public async Task<IActionResult> createProduct([FromForm] ProductCreateDto dto)
+        public async Task<IActionResult> createProduct([FromForm] ProductCreateDTO dto)
         {
             try
             {
@@ -85,13 +85,13 @@ namespace BACK_END.Controllers
 
 
         [HttpPut]
-        public async Task<IActionResult> updateProduct (Product product)
+        public async Task<IActionResult> updateProduct ([FromForm] ProductCreateDTO productCreateDTO)
         {
             try
             {
-                _context.Update(product);
+                _context.Update(productCreateDTO);
                 await _context.SaveChangesAsync();
-                return Ok(product);
+                return Ok(productCreateDTO);
             }
             catch (DbUpdateException dbEx)
             {

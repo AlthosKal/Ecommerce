@@ -1,12 +1,13 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BACK_END.Dto
+namespace LIBRARY.Shared.DTO
 {
-    public class ProductCreateDto
+    public class ProductCreateDTO
     {
         public int ProdCategoryId { get; set; }
         public string Name { get; set; }

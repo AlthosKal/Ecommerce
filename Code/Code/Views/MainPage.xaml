@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodels="clr-namespace:Ecommerce.Mobile.ViewModels"
+             xmlns:entities="clr-namespace:Ecommerce.Shared.Entities;assembly=Ecommerce.Shared"
+             x:DataType="viewmodels:CountriesViewModel"
+             x:Class="Ecommerce.Mobile.Views.MainPage"
+             Title="Países">
+
+    <ContentPage.BindingContext>
+        <!-- Se asignará programáticamente en el code-behind -->
+    </ContentPage.BindingContext>
+
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Padding="20" RowSpacing="10">
+
+        <!-- Sección para agregar país -->
+        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" ColumnSpacing="10">
+            <Entry Placeholder="Nombre del país"
+                   Text="{Binding NewCountryName}"
+                   MaxLength="100"
+                   Grid.Column="0" />
+            <Button Text="Agregar" 
+                    Command="{Binding AddCountryCommand}"
+                    Grid.Column="1"
+                    BackgroundColor="Green"
+                    TextColor="White" />
+        </Grid>
+
+        <!-- Mensaje de error -->
+        <Label Grid.Row="1" 
+               Text="{Binding ErrorMessage}" 
+               TextColor="Red"
+               IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotEmptyConverter}}" />
+
+        <!-- Lista de países -->
+        <RefreshView Grid.Row="2" 
+                     Command="{Binding LoadCountriesCommand}"
+                     IsRefreshing="{Binding IsBusy}">
+            <CollectionView ItemsSource="{Binding Countries}"
+                            SelectionMode="Single"
+                            SelectedItem="{Binding SelectedCountry}">
+                <CollectionView.EmptyView>
+                    <StackLayout VerticalOptions="Center" HorizontalOptions="Center">
+                        <Label Text="No hay países disponibles" FontSize="Medium" TextColor="Gray" />
+                        <Button Text="Recargar" Command="{Binding LoadCountriesCommand}" 
+                                HorizontalOptions="Center" Margin="0,10,0,0" />
+                    </StackLayout>
+                </CollectionView.EmptyView>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="entities:Country">
+                        <SwipeView>
+                            <SwipeView.RightItems>
+                                <SwipeItems>
+                                    <SwipeItem Text="Editar"
+                                               BackgroundColor="Orange"
+                                               Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:CountriesViewModel}}, Path=EditCountryCommand}" />
+                                    <SwipeItem Text="Eliminar"
+                                               BackgroundColor="Red"
+                                               Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:CountriesViewModel}}, Path=DeleteCountryCommand}" />
+                                </SwipeItems>
+                            </SwipeView.RightItems>
+                            <Grid Padding="10">
+                                <Frame BorderColor="LightGray" CornerRadius="5" Padding="10">
+                                    <StackLayout>
+                                        <Label Text="{Binding Name}" FontAttributes="Bold" FontSize="Medium" />
+                                        <Label Text="{Binding StatesNumber, StringFormat='Estados/Departamentos: {0}'}" TextColor="Gray" />
+                                    </StackLayout>
+                                </Frame>
+                            </Grid>
+                        </SwipeView>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </RefreshView>
+
+        <!-- Botones de acción para el país seleccionado -->
+        <Grid Grid.Row="3" ColumnDefinitions="*,*" ColumnSpacing="10" 
+              IsVisible="{Binding SelectedCountry, Converter={StaticResource IsNotNullConverter}}">
+            <Button Text="Editar" 
+                    Command="{Binding EditCountryCommand}"
+                    Grid.Column="0"
+                    BackgroundColor="Orange"
+                    TextColor="White" />
+            <Button Text="Eliminar" 
+                    Command="{Binding DeleteCountryCommand}"
+                    Grid.Column="1"
+                    BackgroundColor="Red"
+                    TextColor="White" />
+        </Grid>
+    </Grid>
+</ContentPage>
