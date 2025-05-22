@@ -15,11 +15,11 @@
             <!-- Colors -->
             <Color x:Key="Primary">#512BD4</Color>
             <Color x:Key="PrimaryDark">#351985</Color>
-            <Color x:Key="Background">Black</Color>
+            <Color x:Key="Background">White</Color>
 
             <!-- Styles -->
             <Style TargetType="Label">
-                <Setter Property="TextColor" Value="White" />
+                <Setter Property="TextColor" Value="Black" />
                 <Setter Property="FontFamily" Value="OpenSansRegular" />
             </Style>
 

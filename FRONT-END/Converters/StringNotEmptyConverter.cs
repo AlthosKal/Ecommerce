@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace FRONT_END.Converters
 {
-    internal class StringNotEmptyConverter : IValueConverter
+    public class StringNotEmptyConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {

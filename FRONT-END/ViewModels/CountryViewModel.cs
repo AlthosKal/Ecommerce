@@ -9,21 +9,21 @@ namespace FRONT_END.ViewModels;
 public partial class CountryViewModel : ObservableValidator
 {
     private readonly ApiService _apiService;
+
     [ObservableProperty]
     private ObservableCollection<Country> _countries;
 
     [ObservableProperty]
-    private Country _selectedCountry;
+    private Country? _selectedCountry;
 
     [ObservableProperty]
     private bool _isBusy;
 
     [ObservableProperty]
-    private string _newCountry;
+    private string _newCountry = string.Empty;
 
     [ObservableProperty]
-    private string _errorMessage;
-
+    private string _errorMessage = string.Empty;
 
     public CountryViewModel(ApiService apiService)
     {
@@ -55,7 +55,6 @@ public partial class CountryViewModel : ObservableValidator
         {
             ErrorMessage = $"No se pudieron cargar los países: {ex.Message}";
             await Shell.Current.DisplayAlert("Error", ErrorMessage, "OK");
-            throw;
         }
         finally
         {
@@ -64,41 +63,52 @@ public partial class CountryViewModel : ObservableValidator
     }
 
     [RelayCommand]
-    public void SelectCountry()
+    private void OnCountrySelected()
     {
         if (SelectedCountry != null)
         {
             NewCountry = SelectedCountry.Name;
+            ErrorMessage = string.Empty;
         }
     }
 
     [RelayCommand]
     public async Task AddCountry()
     {
-        if (IsBusy) { return; }
-        else if (string.IsNullOrWhiteSpace(NewCountry))
+        if (IsBusy) return;
+
+        // Validaciones
+        if (string.IsNullOrWhiteSpace(NewCountry))
         {
             ErrorMessage = "El campo es obligatorio";
             return;
         }
-        else if (Countries.Any(c => c.Name.Equals(NewCountry, StringComparison.OrdinalIgnoreCase)))
+
+        if (Countries.Any(c => c.Name.Equals(NewCountry, StringComparison.OrdinalIgnoreCase)))
         {
             ErrorMessage = "El país ya existe";
             return;
-        }else if (NewCountry.Length > 100)
+        }
+
+        if (NewCountry.Length > 100)
         {
             ErrorMessage = "El nombre del país no puede tener más de 100 caracteres";
             return;
         }
+
         try
         {
             IsBusy = true;
-            var newCountry = new Country { 
-                Name = NewCountry,
+            ErrorMessage = string.Empty;
+
+            var newCountry = new Country
+            {
+                Name = NewCountry.Trim(),
                 States = new List<State>()
             };
-            var response = await _apiService.AddCountryAsync(newCountry);
-            if (response != null)
+
+            var success = await _apiService.AddCountryAsync(newCountry);
+            if (success)
             {
                 await LoadCountries();
                 NewCountry = string.Empty;
@@ -107,18 +117,27 @@ public partial class CountryViewModel : ObservableValidator
             else
             {
                 ErrorMessage = "No se pudo agregar el país";
-                await Shell.Current.DisplayAlert("Error", ErrorMessage, "OK");
             }
         }
         catch (Exception ex)
         {
             ErrorMessage = $"No se pudo agregar el país: {ex.Message}";
             await Shell.Current.DisplayAlert("Error", ErrorMessage, "OK");
-            throw;
         }
         finally
         {
             IsBusy = false;
+        }
+    }
+
+    [RelayCommand]
+    public void EditCountry(Country country)
+    {
+        if (country != null)
+        {
+            SelectedCountry = country;
+            NewCountry = country.Name;
+            ErrorMessage = string.Empty;
         }
     }
 
@@ -130,40 +149,53 @@ public partial class CountryViewModel : ObservableValidator
             ErrorMessage = "Seleccione un país para actualizar";
             return;
         }
-        else if (string.IsNullOrWhiteSpace(NewCountry))
+
+        if (string.IsNullOrWhiteSpace(NewCountry))
         {
             ErrorMessage = "El campo es obligatorio";
             return;
         }
-        else if (Countries.Any(c => c.Name.Equals(NewCountry, StringComparison.OrdinalIgnoreCase) && c.Id != SelectedCountry.Id))
+
+        if (Countries.Any(c => c.Name.Equals(NewCountry, StringComparison.OrdinalIgnoreCase) && c.Id != SelectedCountry.Id))
         {
             ErrorMessage = "El país ya existe";
             return;
         }
-        else if (NewCountry.Length > 100)
+
+        if (NewCountry.Length > 100)
         {
             ErrorMessage = "El nombre del país no puede tener más de 100 caracteres";
             return;
         }
+
         try
         {
             IsBusy = true;
-            var updatedCountry = new Country { 
-                Id = SelectedCountry.Id,
-                Name = NewCountry,
-                States = SelectedCountry.States
-            };
-            var response = await _apiService.UpdateCountryAsync(updatedCountry);
-            if (response != null)
+            ErrorMessage = string.Empty;
+
+            var updatedCountry = new Country
             {
-                LoadCountries();
+                Id = SelectedCountry.Id,
+                Name = NewCountry.Trim(),
+                States = SelectedCountry.States ?? new List<State>()
+            };
+
+            var success = await _apiService.UpdateCountryAsync(updatedCountry);
+            if (success)
+            {
+                await LoadCountries();
+                NewCountry = string.Empty;
+                SelectedCountry = null;
+            }
+            else
+            {
+                ErrorMessage = "No se pudo actualizar el país";
             }
         }
         catch (Exception ex)
         {
             ErrorMessage = $"No se pudo actualizar el país: {ex.Message}";
             await Shell.Current.DisplayAlert("Error", ErrorMessage, "OK");
-            throw;
         }
         finally
         {
@@ -172,38 +204,43 @@ public partial class CountryViewModel : ObservableValidator
     }
 
     [RelayCommand]
-    public async Task DeleteCountry()
+    public async Task DeleteCountry(Country? country = null)
     {
-        if (SelectedCountry == null) { return; }
+        var countryToDelete = country ?? SelectedCountry;
+        if (countryToDelete == null) return;
 
         bool confirm = await Shell.Current.DisplayAlert(
             "Confirmar",
-            $"¿Está seguro de que desea eliminar el país '{SelectedCountry.Name}'?",
+            $"¿Está seguro de que desea eliminar el país '{countryToDelete.Name}'?",
             "Sí",
             "No");
-        if (!confirm) { return; }
+
+        if (!confirm) return;
 
         try
         {
             IsBusy = true;
             ErrorMessage = string.Empty;
-            var response = await _apiService.DeleteCountryAsync(SelectedCountry.Id);
-            if (response)
+
+            var success = await _apiService.DeleteCountryAsync(countryToDelete.Id);
+            if (success)
             {
-                Countries.Remove(SelectedCountry);
-                SelectedCountry = null;
+                Countries.Remove(countryToDelete);
+                if (SelectedCountry?.Id == countryToDelete.Id)
+                {
+                    NewCountry = string.Empty;
+                    SelectedCountry = null;
+                }
             }
             else
             {
                 ErrorMessage = "No se pudo eliminar el país";
-                await Shell.Current.DisplayAlert("Error", ErrorMessage, "OK");
             }
         }
         catch (Exception ex)
         {
             ErrorMessage = $"No se pudo eliminar el país: {ex.Message}";
             await Shell.Current.DisplayAlert("Error", ErrorMessage, "OK");
-            throw;
         }
         finally
         {

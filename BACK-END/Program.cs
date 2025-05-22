@@ -35,9 +35,9 @@ builder.Services.AddTransient<SeeDB>();
 // ✅ Agrega CORS ANTES de builder.Build()
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowLocalhost", policy =>
+    options.AddPolicy("AllowMauiApp", policy =>
     {
-        policy.WithOrigins("https://192.168.1.21") // tu IP local
+        policy.AllowAnyOrigin()
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
@@ -46,7 +46,7 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 // ✅ Usa la política CORS registrada
-app.UseCors("AllowLocalhost");
+app.UseCors("AllowMauiApp");
 
 // ✅ Seed de datos (si lo necesitas)
 SeedData(app);
