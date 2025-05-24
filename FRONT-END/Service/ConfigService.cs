@@ -15,7 +15,8 @@ namespace FRONT_END.Service
 #if DEBUG
 #if ANDROID
   
-                return "https://192.168.95.99:7261/api/v1"; 
+                //return "https://192.168.95.99:7261/api/v1"; 
+                return "https://192.168.1.21:7261/api/v1"; 
 #elif IOS
                 return "https://localhost:7261/api/v1";
 #else
